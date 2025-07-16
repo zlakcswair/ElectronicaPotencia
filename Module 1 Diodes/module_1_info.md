@@ -2,4 +2,4 @@
 
 [Home](../README.md)
 
-![Simulación_1](/images/UPB.png)
+![Simulación_1](images/UPB.png)
