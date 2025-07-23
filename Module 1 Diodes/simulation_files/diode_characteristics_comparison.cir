@@ -1,0 +1,40 @@
+* Diode Characteristics Comparison Circuit
+* Compares General Purpose, Fast Recovery, and Schottky diode behavior
+* Educational circuit for Power Diodes Technical Report
+
+* Test voltage source - square wave for switching analysis
+VIN 1 0 PULSE(-5V 5V 0 10NS 10NS 1US 2US)
+
+* Current limiting resistor
+R1 1 2 100
+
+* General Purpose Diode
+D_GP 2 3 D_GENERAL
+R_GP 3 0 1K
+
+* Fast Recovery Diode  
+D_FR 2 4 D_FAST
+R_FR 4 0 1K
+
+* Schottky Diode
+D_SCH 2 5 D_SCHOTTKY  
+R_SCH 5 0 1K
+
+* Diode Models
+* General Purpose Diode (high trr, moderate Vf)
+.MODEL D_GENERAL D(IS=1E-14 RS=0.05 CJO=10PF TT=25US VJ=0.7V)
+
+* Fast Recovery Diode (low trr, moderate Vf)
+.MODEL D_FAST D(IS=1E-14 RS=0.03 CJO=5PF TT=1US VJ=0.8V)
+
+* Schottky Diode (very low trr, low Vf)
+.MODEL D_SCHOTTKY D(IS=1E-12 RS=0.02 CJO=15PF TT=0.1NS VJ=0.4V)
+
+* Transient analysis to show switching behavior
+.TRAN 1NS 10US 0 10PS
+
+* Enable detailed output
+.PROBE
+.OPTIONS NOPAGE
+
+.END

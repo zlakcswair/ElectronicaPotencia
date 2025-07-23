@@ -1,0 +1,38 @@
+* Three-Phase Bridge Rectifier with RL Load
+* Based on Rashid Power Electronics Example 3.8
+* Circuit Analysis for Power Diodes Report
+
+* Three-phase voltage sources (120V RMS line-to-neutral, 120° apart)
+VAN 8 0 SIN(0 169.7V 60HZ)              ; Phase A
+VBN 2 0 SIN(0 169.7V 60HZ 0 0 120DEG)   ; Phase B (120° lag)
+VCN 3 0 SIN(0 169.7V 60HZ 0 0 240DEG)   ; Phase C (240° lag)
+
+* Load circuit
+R 4 6 2.5                                ; Load resistance 2.5 ohms
+L 6 7 1.5MH                              ; Load inductance 1.5 mH
+VX 7 5 DC 10V                            ; DC voltage source and current meter for i_o
+VY 8 1 DC 0V                             ; Current meter for phase A input current
+
+* Upper diodes (anodes connected to positive DC bus)
+D1 1 4 DMOD                              ; Phase A upper diode
+D3 2 4 DMOD                              ; Phase B upper diode  
+D5 3 4 DMOD                              ; Phase C upper diode
+
+* Lower diodes (cathodes connected to negative DC bus)
+D2 5 3 DMOD                              ; Phase C lower diode
+D4 5 1 DMOD                              ; Phase A lower diode
+D6 5 2 DMOD                              ; Phase B lower diode
+
+* Diode model with 1800V breakdown voltage
+.MODEL DMOD D(IS=2.22E-15 BV=1800V CJO=0 TT=0)
+
+* Transient analysis with tight convergence for three-phase
+.TRAN 10US 25MS 16.667MS 10US
+
+* Convergence options for three-phase circuits
+.OPTIONS ITL5=0 abstol=1.000n reltol=.01 vntol=1.000m NOPAGE
+
+* Enable probe for graphical results
+.PROBE
+
+.END

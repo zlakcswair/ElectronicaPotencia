@@ -1,0 +1,35 @@
+* Freewheeling Diode Circuit Analysis
+* Demonstrates the protection and energy management role of freewheeling diodes
+* Based on principles from Rashid and Mohan Power Electronics texts
+
+* Input voltage source (step function to simulate switch opening)
+VIN 1 0 PULSE(12V 0V 0 1NS 1NS 5MS 10MS)
+
+* Switch model (ideal switch using voltage-controlled switch)
+S1 1 2 3 0 SMOD
+VG 3 0 PULSE(5V 0V 0 1NS 1NS 5MS 10MS)
+.MODEL SMOD VSWITCH(RON=0.01 ROFF=1MEG VON=2.5V VOFF=2.4V)
+
+* Inductive load
+L1 2 4 10MH  IC=0              ; 10mH inductor, initial current = 0
+R1 4 0 5                       ; 5 ohm load resistor
+
+* Freewheeling diode (connected antiparallel to inductive load)
+D1 0 2 DMOD
+
+* Diode model
+.MODEL DMOD D(IS=1E-14 RS=0.01 CJO=0 TT=0)
+
+* Current measurement through inductor
+VX 2 3 DC 0V
+
+* Transient analysis
+.TRAN 0.1MS 15MS 0 0.01MS
+
+* Enable probe
+.PROBE
+
+* Analysis options
+.OPTIONS NOPAGE ITL5=0
+
+.END

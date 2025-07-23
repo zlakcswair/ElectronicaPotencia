@@ -1,0 +1,382 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Code listing settings
+\lstset{
+    basicstyle=\ttfamily\footnotesize,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    breaklines=true,
+    showstringspaces=false
+}
+
+\title{\textbf{Technical Report: Power Diodes and Rectification Applications}}
+\author{Senior Power Electronics Engineer\\Universidad Pontificia Bolivariana - Montería}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This technical report provides a comprehensive analysis of power diodes and their fundamental applications in rectification circuits. As basic yet critical components in power electronic systems, power diodes serve as unidirectional switches whose non-ideal behavior significantly impacts the performance and limitations of energy conversion systems. This document examines the static and dynamic characteristics of power diodes, classification based on recovery characteristics, freewheeling applications, and detailed analysis of single-phase and three-phase rectifier circuits. The report includes performance parameter evaluation, design considerations, and practical simulation guidelines using PSpice. The analysis is based on authoritative references in power electronics, including Rashid, Mohan, and Erickson textbooks.
+\end{abstract}
+
+\section{Introduction}
+
+Power diodes represent the simplest semiconductor devices in power electronics, yet their non-ideal behavior is fundamental to understanding the performance and limitations of modern energy conversion systems. They function as unidirectional switches whose state (conduction or blocking) is determined by the power circuit in which they operate \cite{rashid2014, mohan2003}.
+
+As a Senior Power Electronics Engineer and university professor, the objective of this report is to combine theoretical rigor with practical applications to demystify the components and circuits that form the foundation of modern energy conversion. This comprehensive analysis is designed to provide exhaustive understanding of power diodes and their fundamental role in rectifier circuits, based exclusively on authorized reference texts in the field.
+
+\section{Power Diode Fundamentals}
+
+Power diodes are the simplest semiconductor components, but their non-ideal behavior is crucial for understanding the performance and limitations of power electronic systems. They act as unidirectional switches whose state (conduction or blocking) is determined by the power circuit in which they are embedded.
+
+\subsection{Static Characteristics (v-i Curve)}
+
+The fundamental relationship between the voltage ($v_D$) across a diode and the current ($i_D$) flowing through it is described by its characteristic v-i curve. For circuit analysis, it is common to begin with an idealized model where the diode behaves as a perfect switch: zero voltage drop in conduction and zero leakage current in blocking \cite{rashid2014, mohan2003}.
+
+However, a real diode deviates from this ideal. Its static behavior is divided into three operating regions \cite{rashid2014}:
+
+\begin{enumerate}
+    \item \textbf{Forward Bias Region ($v_D > 0$):} The diode conducts when the anode voltage is positive with respect to the cathode. A small forward voltage drop, $V_F$, typically between 0.5 V and 1.2 V in silicon power diodes occurs \cite{rashid2014}. This voltage drop, although small, is a source of conduction power loss ($P_{cond} = V_F \cdot I_D$) that must be thermally managed.
+    
+    \item \textbf{Reverse Bias Region ($v_D < 0$):} The diode blocks current flow. A small leakage current ($I_S$), on the order of microamperes or milliamperes, flows in the reverse direction \cite{rashid2014}.
+    
+    \item \textbf{Breakdown Region ($v_D < -V_{BR}$):} If the reverse voltage exceeds the specified breakdown voltage ($V_{BR}$), the reverse current increases drastically. Operation in this region can be destructive if power dissipation is not limited \cite{rashid2014}.
+\end{enumerate}
+
+The steady-state v-i relationship is accurately described by the Shockley equation \cite{rashid2014}:
+\begin{equation}
+I_{D}=I_{S}(e^{V_{D}/nV_{T}}-1)
+\end{equation}
+where $I_S$ is the leakage current, $V_T$ is the thermal voltage (approximately 25.7 mV at 25°C), and $n$ is the emission coefficient (between 1 and 2) \cite{rashid2014}.
+
+It is precisely the non-linear and unidirectional nature of this v-i curve that originates harmonic distortion in rectifier circuits. A linear component, such as a resistor, responds to a sinusoidal voltage with a sinusoidal current. In contrast, when a sinusoidal voltage is applied to a diode, it only conducts during part of the cycle, "clipping" the waveform. According to Fourier analysis, any non-sinusoidal periodic waveform is composed of a fundamental component and a series of higher frequency harmonics \cite{rashid2014}. Therefore, the physics of the device, encapsulated in its non-linear v-i curve, is the direct cause of harmonic current generation in the electrical grid, leading to low power factor and potential power quality problems.
+
+\subsection{Dynamic Switching Characteristics (Reverse Recovery)}
+
+The diode's behavior during turn-on and turn-off transitions defines its dynamic characteristics. While turn-on is relatively fast, the turn-off process presents a critical phenomenon known as reverse recovery \cite{rashid2014, mohan2003}.
+
+When a diode transitions from the conducting state to the blocking state, it does not stop conducting instantaneously. Due to the stored charge in the semiconductor junction, a reverse current flows for a brief period known as the reverse recovery time ($t_{rr}$) \cite{rashid2014, mohan2003}. This process is characterized by two key parameters:
+
+\begin{itemize}
+    \item \textbf{Peak Reverse Recovery Current ($I_{RR}$):} The maximum value reached by the reverse current during the transition.
+    \item \textbf{Reverse Recovery Charge ($Q_{RR}$):} The total charge that must be extracted from the diode for it to regain its blocking capability. It is calculated as the area under the reverse recovery current curve \cite{rashid2014}.
+\end{itemize}
+
+The manner in which the current returns to zero after reaching the peak $I_{RR}$ is described by the softness factor, which distinguishes between abrupt recovery (which can cause overvoltages in inductive circuits) and soft recovery \cite{rashid2014}.
+
+This reverse recovery phenomenon is largely the factor that segments the power diode market. In low-frequency applications such as line rectifiers (50/60 Hz), the $t_{rr}$ is negligible compared to the cycle period, so inexpensive general-purpose diodes can be used. However, in modern power electronics, the goal is to increase switching frequency to reduce the size, weight, and cost of magnetic components (inductors and transformers) and capacitors \cite{rashid2014}. In a converter switching at 100 kHz (10 μs period), a general-purpose diode with a $t_{rr}$ of 25 μs would never achieve proper voltage blocking, leading to catastrophic failure \cite{rashid2014}. This creates demand for specialized diodes with very short recovery times, giving rise to the fast recovery diode category and innovation in new materials.
+
+\section{Classification and Key Applications of Power Diodes}
+
+The choice of the correct diode is a critical design decision that fundamentally depends on the operating frequency and voltage levels of the converter.
+
+\subsection{Diode Types: General Purpose, Fast Recovery, and Schottky}
+
+Power diodes are primarily classified into three categories based on their recovery characteristics \cite{rashid2014}:
+
+\begin{itemize}
+    \item \textbf{General Purpose Diodes:} They have a relatively high reverse recovery time (typically 25 μs) and are designed for low-speed, high-power applications such as line rectifiers and grid-commutated converters. Their ratings can reach up to 6000 V and 4500 A \cite{rashid2014}.
+    
+    \item \textbf{Fast Recovery Diodes:} They possess a low $t_{rr}$ (normally < 5 μs), making them indispensable for high-frequency switching circuits such as DC-DC and DC-AC converters (inverters). Their ratings can reach up to 6000 V and 1100 A \cite{rashid2014, mohan2003}.
+    
+    \item \textbf{Schottky Diodes:} These diodes use a metal-semiconductor junction instead of a p-n junction. As a result, conduction is due solely to majority carriers, virtually eliminating minority carrier charge storage and, therefore, reverse recovery time. Additionally, they exhibit a very low forward voltage drop (typically 0.3 V) \cite{rashid2014, mohan2003}. The main drawback of silicon Schottky diodes is their limited voltage blocking capability (generally < 100 V) and higher leakage current compared to p-n junction diodes \cite{rashid2014}. They are ideal for low-voltage, high-current power supplies, such as those in computers.
+\end{itemize}
+
+The development of \textbf{Silicon Carbide (SiC)} Schottky diodes represents a significant technological advancement. SiC is a wide-bandgap material that can withstand much more intense electric fields than silicon \cite{rashid2014, erickson2001}. This allows manufacturing SiC Schottky diodes with high blocking voltages (e.g., 600 V or more) while maintaining the advantages of zero reverse recovery and low forward voltage drop. This innovation breaks the traditional silicon device trade-off and enables the design of high-frequency, high-efficiency converters at much higher power and voltage levels, with applications in solar inverters, electric vehicles, and advanced power supplies \cite{rashid2014}.
+
+\subsection{Essential Application: The Freewheeling Diode}
+
+One of the most fundamental applications of diodes in power electronics is the protection of switches in circuits with inductive loads. When a switch opens, interrupting current in an inductor, the stored magnetic energy ($E = \frac{1}{2}LI^2$) induces a very high reverse voltage spike ($v = L \frac{di}{dt}$) across the switch terminals, which can destroy it \cite{rashid2014}.
+
+To prevent this problem, a freewheeling diode is connected in antiparallel with the inductive load. When the switch opens, this diode becomes forward biased and provides a safe path for the inductor current to continue flowing, dissipating the energy in a controlled manner through the load resistance \cite{rashid2014}.
+
+However, the freewheeling diode is more than a simple protection device; it is an active component in energy management that enables the operation of key converter topologies, such as the buck converter. In a buck converter, the switching cycle consists of two modes \cite{rashid2014}:
+
+\begin{enumerate}
+    \item \textbf{Mode 1 (Switch closed):} The input source supplies energy to the inductor and load. The freewheeling diode is reverse biased and does not participate.
+    \item \textbf{Mode 2 (Switch open):} The input source is disconnected. The freewheeling diode becomes forward biased, allowing the inductor, now acting as an energy source, to discharge its current through the load.
+\end{enumerate}
+
+In this way, the diode not only "freewheels" the current but completes the circuit in the second phase of the energy conversion cycle, ensuring continuous current flow to the load and enabling the voltage averaging function of the converter \cite{rashid2014}.
+
+\section{Diode Rectifiers: The AC-DC Conversion Process}
+
+Rectifiers are circuits that convert an AC signal into a unidirectional (pulsating DC) signal. They are a type of AC-DC converter and constitute the first block in countless power systems \cite{rashid2014, mohan2003}.
+
+\subsection{Single-Phase Full-Wave Rectifier (Bridge)}
+
+This is the most common topology for single-phase applications. It uses four diodes arranged in a bridge configuration \cite{rashid2014, mohan2003}.
+
+\begin{itemize}
+    \item \textbf{Operation:} During the positive half-cycle of the input voltage, one pair of diagonally opposite diodes conducts, directing current to the load. During the negative half-cycle, the other pair of diodes conducts, reversing the input polarity so that current flows in the same direction through the load.
+    
+    \item \textbf{Output Voltage:} The instantaneous output voltage is the absolute value of the input voltage ($v_o(t) = |v_s(t)|$) \cite{rashid2014}. The average value of the DC output voltage is $V_{dc} = \frac{2V_m}{\pi} \approx 0.9V_s$, where $V_m$ is the peak value of the input voltage and $V_s$ is its RMS value \cite{rashid2014, mohan2003}. The output ripple frequency is twice the input frequency.
+\end{itemize}
+
+\subsection{Three-Phase Full-Wave Rectifier (Six-Pulse Bridge)}
+
+For high-power applications, three-phase rectifiers are the standard, as they offer superior performance \cite{rashid2014, mohan2003}.
+
+\begin{itemize}
+    \item \textbf{Operation:} Uses six diodes. At any instant, the pair of diodes (one from the upper group and one from the lower) that are connected to the two lines with the greatest instantaneous potential difference (line-to-line voltage) conducts \cite{rashid2014}. Each diode conducts for 120 degrees of the input cycle.
+    
+    \item \textbf{Output Voltage:} The output voltage is composed of the upper segments of the six line-to-line voltage waveforms. This produces an output ripple with a frequency of six times the input frequency (hence the name "six-pulse"). The average DC voltage value is significantly higher and smoother: $V_{dc} = \frac{3\sqrt{3}V_m}{\pi} \approx 1.35V_{LL(rms)}$, where $V_m$ is the peak phase voltage and $V_{LL(rms)}$ is the RMS line-to-line voltage \cite{rashid2014, mohan2003}.
+\end{itemize}
+
+\subsection{Impact on Three-Phase Systems (Neutral Current)}
+
+A four-wire three-phase system (three phases plus neutral) is considered electrically balanced when the voltages are equal in magnitude and 120° out of phase. With linear and balanced loads, the phasor sum of the phase currents is zero, so no current flows through the neutral.
+
+However, the proliferation of non-linear loads, such as single-phase rectifiers in office equipment (computers, printers, etc.), has dramatically changed this scenario. Although these loads can be distributed in a balanced manner among the phases, their non-linear nature introduces harmonic current imbalance \cite{mohan2003}. Fourier analysis of single-phase rectifier current shows high odd harmonic content, especially the third.
+
+When the currents of the three phases are added in the neutral, the fundamental components and harmonics that are not multiples of three (5th, 7th, 11th, etc.) cancel due to their 120° phase shift. However, the triplen harmonics (3rd, 9th, 15th, etc.) of each phase are in phase with each other. As a result, instead of canceling, they add arithmetically in the neutral conductor \cite{mohan2003}. This can make the neutral current significantly greater than that of the phases, reaching up to $\sqrt{3}$ times the phase current in cases of highly discontinuous currents \cite{mohan2003}.
+
+This phenomenon has critical safety implications. In older buildings, designed for linear loads, the neutral conductor was often sized smaller than the phase conductors. The unexpected high harmonic current in the neutral, caused by modern electronic equipment, can cause dangerous overheating and fire risk. Consequently, modern electrical codes require neutral conductors in commercial installations to be sized to withstand these additive harmonic currents, a direct example of how power electronics design impacts civil infrastructure and safety regulations.
+
+\section{Analysis and Design of Rectifier Circuits}
+
+Rectifier design goes beyond simple topology selection; it requires quantitative analysis to ensure it meets performance specifications and that its components are properly sized.
+
+\subsection{Performance Parameters}
+
+To evaluate and compare rectifiers, several key parameters are used \cite{rashid2014}:
+
+\begin{itemize}
+    \item \textbf{Rectification Efficiency ($\eta$):} Measures the effectiveness of AC to DC power conversion ($P_{dc}/P_{ac}$).
+    
+    \item \textbf{Ripple Factor (RF):} Quantifies the amount of unwanted AC component in the DC output ($V_{ac(rms)}/V_{dc}$).
+    
+    \item \textbf{Transformer Utilization Factor (TUF):} Indicates how effectively the input transformer capacity is utilized ($P_{dc}/(V_s I_s)$).
+    
+    \item \textbf{Power Factor (PF):} This is the most critical parameter from the electrical grid perspective. It is defined as $PF = \frac{P}{S} = \frac{I_{s1}}{I_s} \cos(\phi_1)$. This product combines two factors:
+    \begin{itemize}
+        \item \textbf{Distortion Factor ($I_{s1}/I_s$):} Measures the purity of the current waveform. A highly distorted current has a low distortion factor.
+        \item \textbf{Displacement Factor (DPF or $\cos(\phi_1)$):} Is the cosine of the angle between voltage and the fundamental component of current.
+    \end{itemize}
+\end{itemize}
+
+The following table summarizes and compares key parameters for single-phase and three-phase bridge rectifiers, highlighting the advantages of the three-phase approach.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of Key Parameters for Bridge Rectifiers}
+\label{tab:rectifiers}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Parameter} & \textbf{Single-Phase Bridge} & \textbf{Three-Phase Bridge} \\
+\midrule
+DC Output Voltage ($V_{dc}$) & $0.9 V_{s(rms)}$ & $1.35 V_{LL(rms)}$ \\
+Ripple Factor (RF) & 48.2\% & 4.2\% \\
+Ripple Frequency & $2 \times f_{\text{input}}$ & $6 \times f_{\text{input}}$ \\
+Power Factor (PF) (Inductive Load) & $\approx 0.9$ & $\approx 0.955$ \\
+Total Harmonic Distortion (THD) of Current & $\approx 48.4\%$ & $\approx 31.1\%$ \\
+TUF (Secondary) & 1.23 & 1.05 \\
+Peak Inverse Voltage (PIV) & $\sqrt{2}V_s$ & $\sqrt{6}V_{LL}/2$ \\
+\bottomrule
+\end{tabular}
+\caption*{Source: Data synthesized from \cite{rashid2014} and \cite{mohan2003}}
+\end{table}
+
+This table clearly illustrates why three-phase rectifiers are superior for high power: they produce higher and much cleaner DC voltage (RF of 4.2\% vs 48.2\%), which greatly simplifies filtering. Additionally, their impact on the grid is lower, with lower current THD and higher power factor.
+
+\subsection{Design Considerations}
+
+Practical rectifier design involves an optimization process that balances performance, cost, and size.
+
+\begin{enumerate}
+    \item \textbf{Diode Selection:} Diodes must be selected based on their average current, RMS current ratings, and crucially, the \textbf{Peak Inverse Voltage (PIV)} they must withstand without entering breakdown \cite{rashid2014}.
+    
+    \item \textbf{Filtering:}
+    \begin{itemize}
+        \item \textbf{DC Filter:} To smooth the DC output voltage, a filter is used, commonly a large capacitor in parallel with the load ($C_d$). A larger capacitor reduces ripple but also increases peak charging currents, which worsens the input current THD \cite{rashid2014}.
+        \item \textbf{AC Filter:} To reduce harmonics injected into the grid, an input filter can be added, typically a series inductor ($L_s$).
+    \end{itemize}
+    
+    \item \textbf{Source Inductance ($L_s$):} The inherent inductance of the electrical grid and transformers cannot be ignored. It causes a phenomenon called \textbf{commutation overlap}, where for a brief period, more than one pair of diodes conducts simultaneously. This overlap reduces the average DC output voltage and smooths the input current transitions, affecting the DPF \cite{rashid2014, mohan2003}.
+\end{enumerate}
+
+The design of these filters is a compromise exercise. An ideal filter would be infinitely large, but practical constraints force the engineer to find the smallest, lightest, and most economical components that reduce ripple and harmonics to an \textit{acceptable} level for the application, not to zero. This optimization is central to all power electronics design.
+
+\section{Practical Simulation Guide with PSpice}
+
+Computer simulation is an indispensable tool for verifying theory and analyzing the behavior of rectifier circuits before construction. The following details instructions for simulating the two main circuits using PSpice, based on examples from the reference text \cite{rashid2014}.
+
+\subsection{Single-Phase Bridge Rectifier Simulation}
+
+This guide is based on Example 3.3 from Rashid \cite{rashid2014}. The objective is to simulate a bridge rectifier with an RL load and a DC voltage source.
+
+\textbf{Instructions for creating the .cir file:}
+
+\begin{lstlisting}[caption=Single-Phase Bridge Rectifier PSpice Code]
+* Example 3.3 Single-Phase Bridge Rectifier with RL load
+VS 1 0 SIN(0 169.7V 60HZ)
+R 3 5 2.5
+L 5 6 6.5MH
+VX 6 4 DC 10V  ; Measures output current i_o
+VY 1 2 DC 0V   ; Measures input current i_s
+D1 2 3 DMOD
+D2 4 0 DMOD
+D3 0 3 DMOD
+D4 4 2 DMOD
+.MODEL DMOD D(IS=2.22E-15 BV=1800V)
+.TRAN 1US 32MS 16.667MS
+.PROBE
+.END
+\end{lstlisting}
+
+\textbf{To visualize results:} In the Probe window, plot I(VX) to see the output current and V(3,4) for the output voltage.
+
+\subsection{Three-Phase Bridge Rectifier Simulation}
+
+This guide is based on Example 3.8 from Rashid \cite{rashid2014}.
+
+\textbf{Instructions for creating the .cir file:}
+
+\begin{lstlisting}[caption=Three-Phase Bridge Rectifier PSpice Code]
+* Example 3.8 Three-Phase Bridge Rectifier with RL load
+VAN 8 0 SIN(0 169.7V 60HZ)
+VBN 2 0 SIN(0 169.7V 60HZ 0 0 120DEG)
+VCN 3 0 SIN(0 169.7V 60HZ 0 0 240DEG)
+R 4 6 2.5
+L 6 7 1.5MH
+VX 7 5 DC 10V  ; Measures output current i_o
+VY 8 1 DC 0V   ; Measures input current of phase A
+D1 1 4 DMOD
+D3 2 4 DMOD
+D5 3 4 DMOD
+D2 5 3 DMOD
+D4 5 1 DMOD
+D6 5 2 DMOD
+.MODEL DMOD D(IS=2.22E-15 BV=1800V)
+.TRAN 10US 25MS 16.667MS 10US
+.options ITL5=0 abstol=1.000n reltol=.01 vntol=1.000m
+.PROBE
+.END
+\end{lstlisting}
+
+\textbf{To visualize results:} In Probe, plot V(4,5) to see the six-pulse output voltage and I(VY) to observe the quasi-square input current of phase A.
+
+\subsection{Expected Simulation Results}
+
+From the simulations, you should observe:
+
+\begin{itemize}
+    \item \textbf{Single-Phase Rectifier:}
+    \begin{itemize}
+        \item Output voltage with significant ripple at 120 Hz (twice the input frequency)
+        \item Discontinuous input current with high harmonic content
+        \item Average DC output voltage approximately 90\% of input RMS voltage
+    \end{itemize}
+    
+    \item \textbf{Three-Phase Rectifier:}
+    \begin{itemize}
+        \item Much smoother output voltage with ripple at 360 Hz (six times input frequency)
+        \item Quasi-square input current waveforms
+        \item Higher average DC output voltage (approximately 1.35 times line-to-line RMS voltage)
+        \item Significantly reduced ripple factor compared to single-phase
+    \end{itemize}
+\end{itemize}
+
+\section{Advanced Topics and Future Considerations}
+
+\subsection{Wide Bandgap Semiconductors}
+
+The development of Silicon Carbide (SiC) and Gallium Nitride (GaN) power devices represents a paradigm shift in power electronics. These wide bandgap materials offer:
+
+\begin{itemize}
+    \item Higher breakdown electric field strength
+    \item Lower on-resistance
+    \item Faster switching speeds
+    \item Higher temperature operation capability
+    \item Reduced switching losses
+\end{itemize}
+
+For rectifier applications, SiC Schottky diodes enable:
+\begin{itemize}
+    \item Zero reverse recovery current
+    \item Lower forward voltage drop
+    \item Higher blocking voltages than silicon Schottky diodes
+    \item Operation at higher frequencies with improved efficiency
+\end{itemize}
+
+\subsection{Active Rectification}
+
+Modern power electronic systems increasingly employ active rectification using MOSFETs or other controlled switches instead of passive diodes. This approach offers:
+
+\begin{itemize}
+    \item Lower conduction losses due to MOSFET's low on-resistance
+    \item Bidirectional power flow capability
+    \item Better control over switching transitions
+    \item Elimination of reverse recovery issues
+\end{itemize}
+
+\subsection{Power Quality Considerations}
+
+As power electronic loads proliferate, their impact on power quality becomes increasingly significant:
+
+\begin{itemize}
+    \item Harmonic current injection requires careful analysis and mitigation
+    \item Power factor correction becomes mandatory in many applications
+    \item Grid codes and standards impose strict limits on harmonic emissions
+    \item Active power factor correction circuits are becoming standard
+\end{itemize}
+
+\section{Conclusions}
+
+Power diodes, despite their apparent simplicity, are fundamental components that significantly influence the performance, efficiency, and power quality characteristics of power electronic systems. This comprehensive analysis has demonstrated several key points:
+
+\begin{enumerate}
+    \item The non-linear v-i characteristic of diodes is the fundamental source of harmonic distortion in rectifier circuits, directly impacting power quality and requiring careful consideration in system design.
+    
+    \item The classification of diodes based on reverse recovery characteristics (general purpose, fast recovery, and Schottky) directly relates to their applications, with switching frequency being the primary determining factor.
+    
+    \item Three-phase rectification offers significant advantages over single-phase approaches, including higher DC output voltage, lower ripple content, better transformer utilization, and reduced harmonic injection into the electrical grid.
+    
+    \item The freewheeling diode application illustrates how a simple protection device becomes an integral part of energy conversion circuits, enabling fundamental topologies like the buck converter.
+    
+    \item Practical rectifier design requires balancing multiple performance parameters while considering real-world constraints such as component costs, size, and thermal management.
+    
+    \item Wide bandgap semiconductors, particularly SiC, are revolutionizing power diode technology by breaking traditional trade-offs between switching speed, voltage rating, and power handling capability.
+\end{enumerate}
+
+The simulation guidelines provided enable practical verification of theoretical concepts, bridging the gap between analysis and implementation. As power electronics continues to evolve toward higher efficiency, higher power density, and better power quality, understanding the fundamental behavior of power diodes remains critical for engineers working in this field.
+
+Future developments in wide bandgap materials, active rectification techniques, and advanced control methods will continue to push the boundaries of what is possible in power conversion systems, but the fundamental principles governing diode behavior will remain the foundation upon which these advances are built.
+
+\newpage
+\section*{Bibliography}
+
+\begin{thebibliography}{9}
+
+\bibitem{rashid2014}
+Rashid, Muhammad H. (2014). \textit{Power Electronics: Devices, Circuits, and Applications} (4th ed.). Pearson.
+
+\bibitem{mohan2003}
+Mohan, Ned, Undeland, Tore M., \& Robbins, William P. (2003). \textit{Power Electronics: Converters, Applications, and Design} (3rd ed.). John Wiley \& Sons, Inc.
+
+\bibitem{erickson2001}
+Erickson, Robert W., \& Maksimović, Dragan (2001). \textit{Fundamentals of Power Electronics} (2nd ed.). Kluwer Academic Publishers.
+
+\bibitem{ieee519}
+IEEE Std 519-2014. (2014). \textit{IEEE Recommended Practice and Requirements for Harmonic Control in Electric Power Systems}. Institute of Electrical and Electronics Engineers.
+
+\bibitem{iec61000}
+IEC 61000-3-2:2018. (2018). \textit{Electromagnetic compatibility (EMC) - Part 3-2: Limits - Limits for harmonic current emissions (equipment input current ≤ 16 A per phase)}. International Electrotechnical Commission.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,28 @@
+* Single-Phase Bridge Rectifier with RL Load
+* Based on Rashid Power Electronics Example 3.3
+* Circuit Analysis for Power Diodes Report
+
+VS 1 0 SIN(0 169.7V 60HZ)    ; 120V RMS sinusoidal source
+R 3 5 2.5                     ; Load resistance 2.5 ohms
+L 5 6 6.5MH                   ; Load inductance 6.5 mH
+VX 6 4 DC 10V                 ; DC voltage source and current meter for i_o
+VY 1 2 DC 0V                  ; Current meter for input current i_s
+
+* Bridge rectifier diodes
+D1 2 3 DMOD                   ; Upper left diode
+D2 4 0 DMOD                   ; Lower right diode  
+D3 0 3 DMOD                   ; Upper right diode
+D4 4 2 DMOD                   ; Lower left diode
+
+* Diode model with 1800V breakdown voltage
+.MODEL DMOD D(IS=2.22E-15 BV=1800V CJO=0 TT=0)
+
+* Transient analysis: 1us step, 32ms total, start plotting at 16.667ms
+.TRAN 1US 32MS 16.667MS
+
+* Enable probe for graphical results
+.PROBE
+
+* Analysis directives
+.OPTIONS NOPAGE
+.END
